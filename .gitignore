@@ -1,0 +1,33 @@
+Grafana/terraform.tfstate*
+# Terraform files
+*.tfstate
+*.tfstate.*
+*.tfvars.backup
+*.tfplan
+.terraform/
+.terraform.lock.hcl
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Runtime files
+crash.log
+crash.*.log
+
+# Backup files
+*.backup
+*~
+
+# Temporary files
+*.tmp
+*.temp

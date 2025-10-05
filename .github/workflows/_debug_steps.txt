@@ -1,0 +1,5 @@
+- name: Debug locals (zakres_lista)
+  run: terraform console <<< 'local.zakres_lista'
+
+- name: Debug locals (selected_vms)
+  run: terraform console <<< 'local.selected_vms'
