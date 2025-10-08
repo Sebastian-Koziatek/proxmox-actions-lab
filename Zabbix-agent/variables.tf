@@ -19,7 +19,7 @@ variable "zakres" {
 variable "clone_vm_id" {
   description = "ID template VM do klonowania"
   type        = number
-  default     = 997
+  default     = 995
 }
 
 variable "cores" {
