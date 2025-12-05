@@ -5,9 +5,9 @@ variable "proxmox_api_token" {
 }
 
 variable "vm_tags" {
-	description = "Tagi przypisane do VM"
-	type        = list(string)
-	default     = ["redhat", "terraform"]
+description = "Tagi przypisane do VM"
+type        = list(string)
+default     = ["RedHat", "terraform"]
 }
 
 variable "zakres" {

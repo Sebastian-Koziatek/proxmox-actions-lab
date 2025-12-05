@@ -6,5 +6,5 @@ cpu_type    = "host"
 memory      = 2048
 net_model   = "e1000"
 net_bridge  = "vmbr0"
-vm_tags     = ["redhat", "terraform"]
+vm_tags     = ["RedHat", "terraform"]
 zakres      = "all"
