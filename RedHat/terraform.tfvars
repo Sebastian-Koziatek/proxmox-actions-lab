@@ -1,4 +1,4 @@
-proxmox_api_token = "root@pam!terraform=ca12b107-5438-4283-92ed-639d2c55aa7d"
+proxmox_api_token = "root@pam!github-actions=097e1510-417b-48bb-b2e8-e84897f20457"
 clone_vm_id = 998
 cores       = 2
 sockets     = 1
