@@ -49,14 +49,14 @@ locals {
   conflict_message = length(local.vm_conflicts) > 0 ? "BŁĄD: Te VM już istnieją: ${join(", ", local.vm_conflicts)}" : ""
 }
 
-# Resource do sprawdzenia konfliktów (wykonuje się przed VM)
-resource "null_resource" "check_vm_conflicts" {
-  count = length(local.vm_conflicts) > 0 ? 1 : 0
-  
-  provisioner "local-exec" {
-    command = "echo '${local.conflict_message}' && exit 1"
-  }
-}
+# Resource do sprawdzenia konfliktów (WYŁĄCZONY - nie działa z workflow_dispatch)
+# resource "null_resource" "check_vm_conflicts" {
+#   count = length(local.vm_conflicts) > 0 ? 1 : 0
+#   
+#   provisioner "local-exec" {
+#     command = "echo '${local.conflict_message}' && exit 1"
+#   }
+# }
 
 # Moduł VM dla każdej wybranej maszyny
 module "vm" {
