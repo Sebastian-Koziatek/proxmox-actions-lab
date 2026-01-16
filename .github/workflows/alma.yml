@@ -48,6 +48,8 @@ jobs:
           echo "Czyszczę lokalny cache Terraform (moduły / plan)";
           rm -rf .terraform .terraform.lock.hcl || true
           terraform init
+        env:
+          TF_VAR_proxmox_api_token: ${{ secrets.PROXMOX_API_TOKEN }}
 
       - name: Terraform Apply/Destroy (na wzór Jenkins)
         run: |
@@ -96,6 +98,8 @@ jobs:
               sleep 15
             fi
           done
+        env:
+          TF_VAR_proxmox_api_token: ${{ secrets.PROXMOX_API_TOKEN }}
 
       - name: Sprawdź czy plik stanu powstał
         run: |
