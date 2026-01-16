@@ -80,7 +80,7 @@ module "vm" {
   vm_tags       = var.vm_tags
   enable_agent  = false
   
-  depends_on = [null_resource.check_vm_conflicts]
+  # depends_on = [null_resource.check_vm_conflicts]  # WYŁĄCZONE
 }
 
 # Outputs z informacją o sprawdzaniu

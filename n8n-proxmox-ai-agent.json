@@ -1,0 +1,192 @@
+{
+  "name": "Proxmox VM Simple Chat",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "51c8e95d-d514-492d-809f-20cab3a5a02c",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ],
+      "webhookId": "proxmox-chat-simple"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.chatInput }}",
+              "operation": "contains",
+              "value2": "alma"
+            }
+          ]
+        }
+      },
+      "id": "if-alma",
+      "name": "Check if Alma",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.github.com/repos/Sebastian-Koziatek/proxmox-actions-lab/actions/workflows/alma.yml/dispatches",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3+json"
+            },
+            {
+              "name": "X-GitHub-Api-Version",
+              "value": "2022-11-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"ref\": \"main\",\n  \"inputs\": {\n    \"action\": \"apply\",\n    \"vm_number\": \"1\"\n  }\n}",
+        "options": {}
+      },
+      "id": "github-api",
+      "name": "Trigger GitHub Action",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        200
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "T0uxxaTNmpGU2PE3",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "output",
+              "value": "VM AlmaLinux #1 creation triggered! Check GitHub Actions."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-message",
+      "name": "Set Message",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [
+        800,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "respond-success",
+      "name": "Respond Success",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1,
+      "position": [
+        900,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "ℹ️ I can create AlmaLinux VMs. Ask: 'create alma vm'",
+        "options": {}
+      },
+      "id": "respond-help",
+      "name": "Respond Help",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        900,
+        400
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Check if Alma",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Alma": {
+      "main": [
+        [
+          {
+            "node": "Trigger GitHub Action",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Help",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger GitHub Action": {
+      "main": [
+        [
+          {
+            "node": "Set Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Message": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "simple-version",
+  "meta": {
+    "instanceId": "0deafcf32686b0ac7fd60296dd5cf9819b0c4a1f1e86e09cba03abff2f6371db"
+  },
+  "id": "ProxmoxSimpleChat",
+  "tags": []
+}
