@@ -1,21 +1,21 @@
 # Lista wszystkich maszyn i ich parametrów
 locals {
   all_vms = {
-    1 = { name = "vmgrafanasrv01", mac = "BC:24:11:EE:87:3D", ip = "10.123.1.141" }
-    2 = { name = "vmgrafanasrv02", mac = "BC:24:11:3B:9C:18", ip = "10.123.1.142" }
-    3 = { name = "vmgrafanasrv03", mac = "BC:24:11:58:C0:47", ip = "10.123.1.143" }
-    4 = { name = "vmgrafanasrv04", mac = "BC:24:11:32:30:50", ip = "10.123.1.144" }
-    5 = { name = "vmgrafanasrv05", mac = "BC:24:11:C4:8C:E4", ip = "10.123.1.145" }
-    6 = { name = "vmgrafanasrv06", mac = "BC:24:11:C3:E0:4F", ip = "10.123.1.146" }
-    7 = { name = "vmgrafanasrv07", mac = "BC:24:11:C9:1D:CD", ip = "10.123.1.147" }
-    8 = { name = "vmgrafanasrv08", mac = "BC:24:11:E9:9E:E1", ip = "10.123.1.148" }
-    9 = { name = "vmgrafanasrv09", mac = "BC:24:11:15:87:74", ip = "10.123.1.149" }
-    10 = { name = "vmgrafanasrv10", mac = "BC:24:11:12:3C:4B", ip = "10.123.1.150" }
-    11 = { name = "vmgrafanasrv11", mac = "BC:24:11:10:0C:31", ip = "10.123.1.151" }
-    12 = { name = "vmgrafanasrv12", mac = "BC:24:11:44:CA:2C", ip = "10.123.1.152" }
-    13 = { name = "vmgrafanasrv13", mac = "BC:24:11:BD:13:E3", ip = "10.123.1.153" }
-    14 = { name = "vmgrafanasrv14", mac = "BC:24:11:DE:DD:63", ip = "10.123.1.154" }
-    15 = { name = "vmgrafanasrv15", mac = "BC:24:11:94:F4:87", ip = "10.123.1.155" }
+    1 = { name = "vmgrafanasrv01", mac = "BC:24:11:EE:87:3D", ip = "10.123.1.41" }
+    2 = { name = "vmgrafanasrv02", mac = "BC:24:11:3B:9C:18", ip = "10.123.1.42" }
+    3 = { name = "vmgrafanasrv03", mac = "BC:24:11:58:C0:47", ip = "10.123.1.43" }
+    4 = { name = "vmgrafanasrv04", mac = "BC:24:11:32:30:50", ip = "10.123.1.44" }
+    5 = { name = "vmgrafanasrv05", mac = "BC:24:11:C4:8C:E4", ip = "10.123.1.45" }
+    6 = { name = "vmgrafanasrv06", mac = "BC:24:11:C3:E0:4F", ip = "10.123.1.46" }
+    7 = { name = "vmgrafanasrv07", mac = "BC:24:11:C9:1D:CD", ip = "10.123.1.47" }
+    8 = { name = "vmgrafanasrv08", mac = "BC:24:11:E9:9E:E1", ip = "10.123.1.48" }
+    9 = { name = "vmgrafanasrv09", mac = "BC:24:11:15:87:74", ip = "10.123.1.49" }
+    10 = { name = "vmgrafanasrv10", mac = "BC:24:11:12:3C:4B", ip = "10.123.1.50" }
+    11 = { name = "vmgrafanasrv11", mac = "BC:24:11:10:0C:31", ip = "10.123.1.51" }
+    12 = { name = "vmgrafanasrv12", mac = "BC:24:11:44:CA:2C", ip = "10.123.1.52" }
+    13 = { name = "vmgrafanasrv13", mac = "BC:24:11:BD:13:E3", ip = "10.123.1.53" }
+    14 = { name = "vmgrafanasrv14", mac = "BC:24:11:DE:DD:63", ip = "10.123.1.54" }
+    15 = { name = "vmgrafanasrv15", mac = "BC:24:11:94:F4:87", ip = "10.123.1.55" }
   }
 
   zakres_lista = var.zakres == "all" ? [for i in range(1,16) : i] : distinct(flatten([for part in split(",", var.zakres) : (
