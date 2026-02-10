@@ -1,3 +1,8 @@
+variable "vm_id" {
+  description = "ID maszyny wirtualnej (VMID)"
+  type        = number
+  default     = null
+}
 variable "vm_name" { 
   description = "Nazwa tworzonej VM"
   type = string 
