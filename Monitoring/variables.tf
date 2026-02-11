@@ -25,7 +25,7 @@ variable "clone_vm_id" {
 variable "cores" {
   description = "Liczba CPU cores na VM"
   type        = number
-  default     = 2
+  default     = 4
 }
 
 variable "sockets" {
@@ -43,7 +43,7 @@ variable "cpu_type" {
 variable "memory" {
   description = "RAM w MB"
   type        = number
-  default     = 2048
+  default     = 6144
 }
 
 variable "net_model" {
