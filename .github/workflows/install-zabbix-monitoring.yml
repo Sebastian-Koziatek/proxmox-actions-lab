@@ -25,6 +25,22 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Ensure ssh tools
+        run: |
+          set -e
+          if ! command -v ssh >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y openssh-client
+          fi
+          if ! command -v scp >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y openssh-client
+          fi
+          if ! command -v sshpass >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y sshpass
+          fi
+
       - name: Install script on selected VMs
         env:
           VM_RANGE: ${{ github.event.inputs.vm_range }}
@@ -33,15 +49,6 @@ jobs:
           SSH_PASSWORD: ${{ secrets.LAB_SSH_PASSWORD }}
         run: |
           set -euo pipefail
-
-          command -v ssh >/dev/null 2>&1 || { echo "[ERROR] Brak binarki ssh"; exit 1; }
-          command -v scp >/dev/null 2>&1 || { echo "[ERROR] Brak binarki scp"; exit 1; }
-
-          has_sshpass=true
-          if ! command -v sshpass >/dev/null 2>&1; then
-            has_sshpass=false
-            echo "[WARN] Brak sshpass - dostepne tylko SSH key auth"
-          fi
 
           if [ -n "${SSH_PASSWORD:-}" ]; then
             echo "::add-mask::$SSH_PASSWORD"
@@ -80,7 +87,7 @@ jobs:
             if ssh "${ssh_opts[@]}" -o BatchMode=yes "$SSH_USER@$ip" "echo connected" >/dev/null 2>&1; then
               auth_mode="key"
               echo "Auth: SSH key"
-            elif [ -n "${SSH_PASSWORD:-}" ] && [ "$has_sshpass" = true ]; then
+            elif [ -n "${SSH_PASSWORD:-}" ]; then
               if sshpass -p "$SSH_PASSWORD" ssh "${ssh_opts[@]}" "$SSH_USER@$ip" "echo connected" >/dev/null 2>&1; then
                 auth_mode="password"
                 echo "Auth: SSH password"
