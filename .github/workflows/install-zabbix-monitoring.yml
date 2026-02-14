@@ -8,9 +8,9 @@ on:
         required: true
         default: "2-13"
       ssh_port:
-        description: "Port SSH (np. 22 albo 22,60601)"
+        description: "Port SSH"
         required: true
-        default: "22,60601"
+        default: "22"
       ssh_user:
         description: "Uzytkownik SSH"
         required: true
@@ -36,19 +36,16 @@ jobs:
 
           command -v ssh >/dev/null 2>&1 || { echo "[ERROR] Brak binarki ssh"; exit 1; }
           command -v scp >/dev/null 2>&1 || { echo "[ERROR] Brak binarki scp"; exit 1; }
-          command -v setsid >/dev/null 2>&1 || { echo "[ERROR] Brak binarki setsid"; exit 1; }
+
+          has_sshpass=true
+          if ! command -v sshpass >/dev/null 2>&1; then
+            has_sshpass=false
+            echo "[WARN] Brak sshpass - dostepne tylko SSH key auth"
+          fi
 
           if [ -n "${SSH_PASSWORD:-}" ]; then
             echo "::add-mask::$SSH_PASSWORD"
           fi
-
-          ASKPASS_FILE="$(mktemp)"
-          cat >"$ASKPASS_FILE" <<'EOF'
-#!/bin/sh
-printf '%s\n' "${SSH_PASSWORD:?}"
-EOF
-          chmod 700 "$ASKPASS_FILE"
-          trap 'rm -f "$ASKPASS_FILE"' EXIT
 
           parse_vm_numbers() {
             local input="$1"
@@ -67,10 +64,7 @@ EOF
           }
 
           vm_list=$(parse_vm_numbers "$VM_RANGE")
-          port_list=$(echo "$SSH_PORT" | tr ',' ' ')
-
           echo "Selected VM numbers: $vm_list"
-          echo "Port candidates: $port_list"
 
           success_vms=()
           failed_vms=()
@@ -80,36 +74,24 @@ EOF
             ip="10.123.1.${octet}"
             echo "--- VM #$vm_num ($ip) ---"
 
+            ssh_opts=(-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=15 -p "$SSH_PORT")
+
             auth_mode=""
-            selected_port=""
-
-            for port in $port_list; do
-              ssh_opts=(-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=15 -p "$port")
-
-              if ssh "${ssh_opts[@]}" -o BatchMode=yes "$SSH_USER@$ip" "echo connected" >/dev/null 2>&1; then
-                auth_mode="key"
-                selected_port="$port"
-                break
+            if ssh "${ssh_opts[@]}" -o BatchMode=yes "$SSH_USER@$ip" "echo connected" >/dev/null 2>&1; then
+              auth_mode="key"
+              echo "Auth: SSH key"
+            elif [ -n "${SSH_PASSWORD:-}" ] && [ "$has_sshpass" = true ]; then
+              if sshpass -p "$SSH_PASSWORD" ssh "${ssh_opts[@]}" "$SSH_USER@$ip" "echo connected" >/dev/null 2>&1; then
+                auth_mode="password"
+                echo "Auth: SSH password"
               fi
-
-              if [ -n "${SSH_PASSWORD:-}" ]; then
-                if env SSH_PASSWORD="$SSH_PASSWORD" DISPLAY=:0 SSH_ASKPASS="$ASKPASS_FILE" SSH_ASKPASS_REQUIRE=force \
-                  setsid ssh "${ssh_opts[@]}" "$SSH_USER@$ip" "echo connected" </dev/null >/dev/null 2>&1; then
-                  auth_mode="password"
-                  selected_port="$port"
-                  break
-                fi
-              fi
-            done
+            fi
 
             if [ -z "$auth_mode" ]; then
-              echo "[ERROR] Brak polaczenia SSH do $ip (porty: $SSH_PORT)"
+              echo "[ERROR] Brak polaczenia SSH do $ip"
               failed_vms+=("$vm_num")
               continue
             fi
-
-            echo "Auth: $auth_mode, port: $selected_port"
-            ssh_opts=(-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=15 -p "$selected_port")
 
             if [ "$auth_mode" = "key" ]; then
               if ! scp "${ssh_opts[@]}" scripts/install_zabbix_server.sh "$SSH_USER@$ip:/tmp/install_zabbix_server.sh"; then
@@ -125,15 +107,13 @@ EOF
                 failed_vms+=("$vm_num")
               fi
             else
-              if ! env SSH_PASSWORD="$SSH_PASSWORD" DISPLAY=:0 SSH_ASKPASS="$ASKPASS_FILE" SSH_ASKPASS_REQUIRE=force \
-                setsid scp "${ssh_opts[@]}" scripts/install_zabbix_server.sh "$SSH_USER@$ip:/tmp/install_zabbix_server.sh" </dev/null >/dev/null 2>&1; then
+              if ! sshpass -p "$SSH_PASSWORD" scp "${ssh_opts[@]}" scripts/install_zabbix_server.sh "$SSH_USER@$ip:/tmp/install_zabbix_server.sh"; then
                 echo "[ERROR] SCP nieudane dla VM #$vm_num"
                 failed_vms+=("$vm_num")
                 continue
               fi
 
-              if printf '%s\n' "$SSH_PASSWORD" | env SSH_PASSWORD="$SSH_PASSWORD" DISPLAY=:0 SSH_ASKPASS="$ASKPASS_FILE" SSH_ASKPASS_REQUIRE=force \
-                setsid ssh "${ssh_opts[@]}" "$SSH_USER@$ip" "chmod +x /tmp/install_zabbix_server.sh && sudo -S -p '' /tmp/install_zabbix_server.sh --yes"; then
+              if sshpass -p "$SSH_PASSWORD" ssh "${ssh_opts[@]}" "$SSH_USER@$ip" "chmod +x /tmp/install_zabbix_server.sh && sudo -S -p '' /tmp/install_zabbix_server.sh --yes" <<<"$SSH_PASSWORD"; then
                 success_vms+=("$vm_num")
               else
                 echo "[ERROR] Instalacja nieudana na VM #$vm_num"
