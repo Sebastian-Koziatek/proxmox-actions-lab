@@ -89,7 +89,7 @@ jobs:
               terraform apply -auto-approve -target=module.vm[\"$vm_num\"] -var="zakres=$vm_num"
             else
               echo "❌ Wykonuję DESTROY dla VM #$vm_num"
-              terraform destroy -auto-approve -target=module.vm[\"$vm_num\"] -var="zakres=$vm_num"
+              terraform destroy -auto-approve -refresh=false -target=module.vm[\"$vm_num\"] -var="zakres=$vm_num"
             fi
             
             # Opóźnienie między VM (ale nie po ostatniej)
