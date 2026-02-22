@@ -1,6 +1,6 @@
 terraform {
   backend "local" {
-    path = "/tmp/terraform-alma.tfstate"
+    path = "terraform.tfstate"
   }
   required_providers {
     proxmox = {

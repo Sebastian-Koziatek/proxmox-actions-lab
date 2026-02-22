@@ -1,11 +1,13 @@
-Grafana/terraform.tfstate*
-# Terraform files
+# Terraform files - lokalne stany (używamy backupu w Git)
 *.tfstate
 *.tfstate.*
 *.tfvars.backup
 *.tfplan
 .terraform/
-.terraform.lock.hcl
+
+# WYJĄTEK: Pozwalamy na lock file i backup stanu w Git
+!.terraform.lock.hcl
+!.terraform-state-backup
 
 # IDE files
 .vscode/

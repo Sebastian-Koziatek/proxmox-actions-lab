@@ -25,8 +25,11 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          clean: true
+
+      - name: Sync state backup from Git (pull latest changes)
+        run: |
+          echo "📥 Synchronizacja najnowszych zmian z repozytorium..."
+          git pull origin main || echo "Brak zmian do pobrania"
 
       - name: Restore Terraform state from Git backup
         run: |
@@ -45,8 +48,8 @@ jobs:
 
       - name: Terraform init
         run: |
-          echo "Czyszczę lokalny cache Terraform (moduły / plan)";
-          rm -rf .terraform .terraform.lock.hcl || true
+          echo "Czyszczę lokalny cache Terraform (moduły)";
+          rm -rf .terraform || true
           terraform init
         env:
           TF_VAR_proxmox_api_token: ${{ secrets.PROXMOX_API_TOKEN }}
@@ -123,7 +126,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: terraform-state-alma
-          path: Alma/terraform.tfstate
+          path: terraform.tfstate
           retention-days: 30
         if: success() || failure()
 
@@ -133,10 +136,11 @@ jobs:
             git config --local user.email "action@github.com"
             git config --local user.name "GitHub Action"
             cp terraform.tfstate .terraform-state-backup
-            git add .terraform-state-backup
+            git add .terraform-state-backup .terraform.lock.hcl
             if git diff --staged --quiet; then
               echo "Stan Terraform nie zmienił się - pomijam commit"
             else
+              git pull --rebase origin main || true
               git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/Sebastian-Koziatek/Terraform-Proxmox.git
               git commit -m "Backup terraform state po ${GITHUB_JOB} (VM: ${{ github.event.inputs.vm_number }})"
               git push
