@@ -21,12 +21,15 @@ jobs:
     runs-on: self-hosted
     defaults:
       run:
-        working-directory: Zabbix-agent
+        working-directory: Monitoring_client
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          clean: true
+
+      - name: Sync state backup from Git (pull latest changes)
+        run: |
+          echo "📥 Synchronizacja najnowszych zmian z repozytorium..."
+          git pull origin main || echo "Brak zmian do pobrania"
 
       - name: Restore Terraform state from Git backup
         run: |
@@ -46,16 +49,18 @@ jobs:
       - name: Terraform init
         run: |
           echo "Czyszczę lokalny cache Terraform (moduły / plan)";
-          rm -rf .terraform .terraform.lock.hcl || true
+          rm -rf .terraform || true
           terraform init
+        env:
+          TF_VAR_proxmox_api_token: ${{ secrets.PROXMOX_API_TOKEN }}
 
       - name: Terraform Apply/Destroy (na wzór Jenkins)
         run: |
           set -e
-          
+
           echo "🔍 DEBUG: Wybrana akcja: '${{ github.event.inputs.action }}'"
           echo "🔍 DEBUG: Wybrane VM: '${{ github.event.inputs.vm_number }}'"
-          
+
           # Funkcja do parsowania zakresów (1-5, 1,3,5, etc.)
           parse_vm_numbers() {
             local input="$1"
@@ -74,14 +79,14 @@ jobs:
               echo "$input"
             fi
           }
-          
+
           vm_list=$(parse_vm_numbers "${{ github.event.inputs.vm_number }}")
           echo "🎯 Przetwarzanie VM: $vm_list"
-          
+
           for vm_num in $vm_list; do
             echo "🚀 Przetwarzanie VM #$vm_num"
             echo "🔍 DEBUG: Akcja = '${{ github.event.inputs.action }}'"
-            
+
             if [ "${{ github.event.inputs.action }}" = "apply" ]; then
               echo "✅ Wykonuję APPLY dla VM #$vm_num"
               terraform apply -auto-approve -target=module.vm[\"$vm_num\"] -var="zakres=$vm_num"
@@ -89,13 +94,15 @@ jobs:
               echo "❌ Wykonuję DESTROY dla VM #$vm_num"
               terraform destroy -auto-approve -target=module.vm[\"$vm_num\"] -var="zakres=$vm_num"
             fi
-            
+
             # Opóźnienie między VM (ale nie po ostatniej)
             if [ "$vm_num" != "$(echo $vm_list | awk '{print $NF}')" ]; then
               echo "⏳ Opóźnienie 15 sekund między maszynami"
               sleep 15
             fi
           done
+        env:
+          TF_VAR_proxmox_api_token: ${{ secrets.PROXMOX_API_TOKEN }}
 
       - name: Sprawdź czy plik stanu powstał
         run: |
@@ -119,7 +126,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: terraform-state-zabbix
-          path: Zabbix-agent/terraform.tfstate
+          path: Monitoring_client/terraform.tfstate
           retention-days: 30
         if: success() || failure()
 
@@ -129,11 +136,12 @@ jobs:
             git config --local user.email "action@github.com"
             git config --local user.name "GitHub Action"
             cp terraform.tfstate .terraform-state-backup
-            git add .terraform-state-backup
+            git add .terraform-state-backup .terraform.lock.hcl
             if git diff --staged --quiet; then
               echo "Stan Terraform nie zmienił się - pomijam commit"
             else
-              git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/Sebastian-Koziatek/Terraform-Proxmox.git
+              git pull --rebase origin main || true
+              git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/Sebastian-Koziatek/proxmox-actions-lab.git
               git commit -m "Backup terraform state po ${GITHUB_JOB} (VM: ${{ github.event.inputs.vm_number }})"
               git push
             fi
