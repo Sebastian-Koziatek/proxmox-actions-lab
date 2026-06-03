@@ -7,7 +7,7 @@ variable "proxmox_api_token" {
 variable "vm_tags" {
   description = "Tagi przypisane do VM"
   type        = list(string)
-  default     = ["zabbix", "ubuntu", "terraform"]
+  default     = ["zabbix-agent", "ubuntu", "terraform"]
 }
 
 variable "zakres" {
@@ -19,7 +19,7 @@ variable "zakres" {
 variable "clone_vm_id" {
   description = "ID template VM do klonowania"
   type        = number
-  default     = 993
+  default     = 995
 }
 
 variable "cores" {
