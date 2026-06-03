@@ -1,0 +1,9 @@
+clone_vm_id = 993
+cores       = 2
+sockets     = 1
+cpu_type    = "host"
+memory      = 2048
+net_model   = "e1000"
+net_bridge  = "vmbr0"
+vm_tags     = ["zabbix", "ubuntu", "terraform"]
+zakres      = "all"

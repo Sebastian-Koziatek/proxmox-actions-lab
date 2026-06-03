@@ -21,7 +21,7 @@ jobs:
     runs-on: self-hosted
     defaults:
       run:
-        working-directory: Monitoring_client
+        working-directory: Zabbix-agent
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -126,7 +126,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: terraform-state-zabbix
-          path: Monitoring_client/terraform.tfstate
+          path: Zabbix-agent/terraform.tfstate
           retention-days: 30
         if: success() || failure()
 
