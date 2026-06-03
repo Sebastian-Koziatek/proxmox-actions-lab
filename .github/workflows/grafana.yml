@@ -92,7 +92,8 @@ jobs:
               echo "⏳ Opóźnienie 15 sekund między maszynami"
               sleep 15
             fi
-          done        env:
+          done
+        env:
           TF_VAR_proxmox_api_token: ${{ secrets.PROXMOX_API_TOKEN }}
       - name: Sprawdź czy plik stanu powstał
         run: |
