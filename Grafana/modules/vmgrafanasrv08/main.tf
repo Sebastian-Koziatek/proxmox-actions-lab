@@ -11,7 +11,7 @@ resource "proxmox_virtual_environment_vm" "vmgrafanasrv08" {
   node_name  = "proxmox"
 
   clone {
-    vm_id = 997
+    vm_id = 996
     full  = true
   }
 

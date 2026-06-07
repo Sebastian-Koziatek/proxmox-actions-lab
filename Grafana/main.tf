@@ -35,7 +35,7 @@ module "vm" {
   vm_id         = each.value.vmid
   vm_name       = each.value.name
   node_name     = "proxmox"
-  clone_vm_id   = 997
+  clone_vm_id   = 996
   cores         = 2
   sockets       = 1
   cpu_type      = "host"
